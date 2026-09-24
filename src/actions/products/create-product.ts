@@ -4,11 +4,14 @@ import { InputProduct } from "@/interfaces";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { v2 as cloudinary } from "cloudinary";
+import { requireSession } from "@/lib/require-session";
 cloudinary.config(process.env.CLOUDINARY_URL ?? "");
 
 export const createProduct = async (product: InputProduct) => {
   console.log(product);
   try {
+    await requireSession();
+
     let image = null;
 
     // uploadImage
@@ -69,8 +72,8 @@ export const createProduct = async (product: InputProduct) => {
       include: {
         color: true,
         size: true,
-        collection: true
-      }
+        collection: true,
+      },
     });
 
     revalidatePath("/");
@@ -84,7 +87,10 @@ export const createProduct = async (product: InputProduct) => {
       },
     };
   } catch (error) {
-    console.log(error);
+    if (error instanceof Error && error.message === "UNAUTHORIZED") {
+      return { ok: false, message: "No autorizado" };
+    }
+    console.error(error);
     return {
       ok: false,
       message: "No se pudo grabar el producto",

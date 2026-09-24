@@ -1,9 +1,12 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { requireSession } from "@/lib/require-session";
 
 export const getStats = async () => {
   try {
+    await requireSession();
+    
     const products = await prisma.product.findMany({
       select: {
         id: true,
@@ -47,6 +50,9 @@ export const getStats = async () => {
       },
     };
   } catch (error) {
+    if (error instanceof Error && error.message === "UNAUTHORIZED") {
+      return { ok: false, message: "No autorizado", stats: null };
+    }
     console.error("Error obteniendo estadísticas:", error);
     return {
       ok: false,

@@ -1,36 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Nesher Inventory
 
-## Getting Started
+Sistema de gestión de inventario para un pequeño negocio de ropa: control de
+stock, colecciones, colores y tallas, con métricas de valor de inventario y
+rentabilidad calculadas en tiempo real.
 
-First, run the development server:
+**Demo en vivo:** https://inventory-emaconor.vercel.app
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Qué resuelve
+
+Nació de la necesidad real de llevar el control de inventario de una tienda
+(stock, precio de proveedor vs. precio de venta, categorías) sin depender de
+una hoja de cálculo. Además de las operaciones CRUD típicas, calcula en el
+dashboard:
+
+- Valor total del inventario (a precio de proveedor)
+- Valor potencial de venta (a precio de venta)
+- Ganancia proyectada
+- Productos con stock bajo o agotado
+
+## Stack
+
+- **Next.js 16** (App Router, Server Actions)
+- **TypeScript**
+- **PostgreSQL** + **Prisma 7** (con `@prisma/adapter-pg`)
+- **better-auth** para autenticación (email/contraseña)
+- **Cloudinary** para almacenamiento de imágenes de producto
+- **react-hook-form** + **zod** para validación de formularios
+- **Tailwind CSS**
+
+## Características
+
+- Autenticación con sesiones (better-auth), rutas protegidas por middleware
+  y por verificación de sesión dentro de cada Server Action
+- CRUD completo de productos, con generación automática de slugs únicos
+- Gestión de colecciones, colores y tallas
+- Filtros combinables (búsqueda, color, talla, colección, estado de stock)
+  con debounce en la búsqueda
+- Subida y reemplazo de imágenes vía Cloudinary (limpieza automática de
+  imágenes huérfanas al actualizar o borrar un producto)
+- Dashboard con estadísticas de inventario y rentabilidad
+
+## Cómo correrlo localmente
+
+### Requisitos
+
+- Node.js 20+
+- pnpm
+- Una base de datos PostgreSQL (local o en la nube, p. ej. Neon/Supabase)
+- Una cuenta de Cloudinary (para subida de imágenes)
+
+### Pasos
+
+1. Clonar el repo e instalar dependencias:
+
+   ```bash
+   git clone https://github.com/EmaConor/NesherInventory.git
+   cd NesherInventory
+   pnpm install
+   ```
+
+2. Crear un archivo `.env` en la raíz con:
+
+   ```env
+   DATABASE_URL="postgresql://usuario:password@host:5432/nombre_db"
+   BETTER_AUTH_URL="http://localhost:3000"
+   BETTER_AUTH_SECRET="una-cadena-aleatoria-larga"
+   CLOUDINARY_URL="cloudinary://api_key:api_secret@cloud_name"
+   ```
+
+3. Aplicar las migraciones y generar el cliente de Prisma:
+
+   ```bash
+   pnpm db:migrate
+   pnpm db:generate
+   ```
+
+4. Levantar el servidor de desarrollo:
+
+   ```bash
+   pnpm dev
+   ```
+
+5. Abrir [http://localhost:3000](http://localhost:3000). La primera vez te
+   redirige a `/auth` para crear una cuenta.
+
+## Estructura del proyecto
+
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+src/
+├── actions/       # Server Actions (productos, colores, tallas, colecciones, stats)
+├── app/           # Rutas (App Router): dashboard, auth
+├── components/    # Componentes de UI y formularios
+├── interfaces/     # Tipos compartidos
+├── lib/           # Cliente de Prisma, configuración de auth
+└── utils/         # Helpers (formato de moneda, slugs, hooks de auth)
+```

@@ -1,17 +1,21 @@
-'use server'
+"use server";
 
-import prisma from "@/lib/prisma"
+import prisma from "@/lib/prisma";
+import { requireSession } from "@/lib/require-session";
 
+export const getCollections = async () => {
+  try {
+    await requireSession();
 
-export const getCollections = async() => {
-  try{
-    const collections = prisma.collection.findMany({ orderBy: {
-      name: 'asc'
-    }})
+    const collections = await prisma.collection.findMany({
+      orderBy: {
+        name: "asc",
+      },
+    });
 
-    return collections
+    return collections;
   } catch (error) {
-    console.log(error)
-    return[]
+    console.error(error);
+    return [];
   }
-}
+};

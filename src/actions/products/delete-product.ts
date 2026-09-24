@@ -3,10 +3,13 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { v2 as cloudinary } from "cloudinary";
+import { requireSession } from "@/lib/require-session";
 cloudinary.config(process.env.CLOUDINARY_URL ?? "");
 
 export const deleteProduct = async (id: string) => {
   try {
+    await requireSession();
+    
     const product = await prisma.product.findUnique({
       where: {
         id,
@@ -34,7 +37,10 @@ export const deleteProduct = async (id: string) => {
       message: "Eliminado correctamente",
     };
   } catch (error) {
-    console.log(error);
+    if (error instanceof Error && error.message === "UNAUTHORIZED") {
+      return { ok: false, message: "No autorizado" };
+    }
+    console.error(error);
     return {
       ok: false,
       message: "No se pudo eliminar el product",
@@ -55,7 +61,6 @@ const deleteImage = async (url: string) => {
     }
 
     const publicId = match[1];
-    console.log("Public ID extraído:", publicId);
 
     const result = await cloudinary.uploader.destroy(publicId, {
       invalidate: true,
@@ -64,11 +69,6 @@ const deleteImage = async (url: string) => {
     if (result.result !== "ok" && result.result !== "not found") {
       console.warn("Resultado inesperado al eliminar imagen:", result);
     }
-
-    console.log(
-      `Imagen ${publicId} eliminada de Cloudinary, resultado:`,
-      result,
-    );
   } catch (e) {
     console.error("Error eliminando imagen:", e);
     throw e;

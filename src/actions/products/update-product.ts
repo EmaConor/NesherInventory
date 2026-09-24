@@ -2,6 +2,7 @@
 
 import { InputProduct } from "@/interfaces";
 import prisma from "@/lib/prisma";
+import { requireSession } from "@/lib/require-session";
 import { v2 as cloudinary } from "cloudinary";
 import { revalidatePath } from "next/cache";
 cloudinary.config(process.env.CLOUDINARY_URL ?? "");
@@ -10,7 +11,7 @@ export const updateProduct = async (product: InputProduct) => {
   let newImageUrl: string | null = null;
 
   try {
-    console.log(product);
+    await requireSession();
 
     if (product.imageChanged && product.image) {
       newImageUrl = await uploadImage(product.image);
@@ -71,6 +72,9 @@ export const updateProduct = async (product: InputProduct) => {
   } catch (e) {
     if (newImageUrl) {
       await deleteImage(newImageUrl);
+    }
+    if (e instanceof Error && e.message === "UNAUTHORIZED") {
+      return { ok: false, message: "No autorizado" };
     }
     console.error(e);
     return {

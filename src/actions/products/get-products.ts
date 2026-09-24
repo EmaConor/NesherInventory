@@ -2,6 +2,7 @@
 
 import { Prisma } from "@/generated/prisma/client";
 import prisma from "@/lib/prisma";
+import { requireSession } from "@/lib/require-session";
 
 interface FilterParams {
   search?: string;
@@ -13,6 +14,8 @@ interface FilterParams {
 
 export const getProducts = async (filters?: FilterParams) => {
   try {
+    await requireSession();
+
     const where: Prisma.ProductWhereInput = {};
 
     const search = filters?.search
@@ -89,7 +92,10 @@ export const getProducts = async (filters?: FilterParams) => {
       message: "Productos cargados correctamente",
     };
   } catch (error) {
-    console.log(error);
+    if (error instanceof Error && error.message === "UNAUTHORIZED") {
+      return { ok: false, products: [], message: "No autorizado" };
+    }
+    console.error(error);
     return {
       ok: false,
       products: [],

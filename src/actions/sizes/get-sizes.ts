@@ -1,9 +1,12 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { requireSession } from "@/lib/require-session";
 
 export const getSizes = async () => {
   try {
+    await requireSession();
+
     const sizes = prisma.size.findMany({
       orderBy: {
         label: "asc",
@@ -12,7 +15,7 @@ export const getSizes = async () => {
 
     return sizes;
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return [];
   }
 };
