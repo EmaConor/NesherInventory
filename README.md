@@ -4,7 +4,7 @@ Sistema de gestión de inventario para un pequeño negocio de ropa: control de
 stock, colecciones, colores y tallas, con métricas de valor de inventario y
 rentabilidad calculadas en tiempo real.
 
-**Demo en vivo:** https://inventory-emaconor.vercel.app
+**Demo en vivo:** https://inven.emaconor.site
 
 ## Qué resuelve
 
